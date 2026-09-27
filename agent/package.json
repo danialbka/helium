@@ -1,0 +1,14 @@
+{
+  "name": "helium-playwright-integration",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Official Playwright CLI with an existing Helium browser session",
+  "scripts": {
+    "setup": "node scripts/setup.mjs",
+    "helium": "node bin/helium-playwright.mjs"
+  },
+  "dependencies": {
+    "@playwright/cli": "0.1.21"
+  }
+}

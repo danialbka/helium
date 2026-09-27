@@ -1,3 +1,6 @@
+> Personal fork: [Helium + official Playwright CLI for terminal Codex](agent/README.md).
+> Uses the existing Helium session. Active-tab protection is deferred.
+
 <div align="center">
     <img src="resources/branding/app_icon/raw.png"
         title="Helium" alt="Helium logo" width="120" />
