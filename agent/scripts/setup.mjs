@@ -20,6 +20,8 @@ await writeFile(path.join(local, 'settings.json'), JSON.stringify({ executablePa
 await writeFile(path.join(local, 'cli.config.json'), JSON.stringify({
   browser: { browserName: 'chromium', contextOptions: { viewport: null } },
   outputDir: path.join(local, 'artifacts'),
+  // Use Playwright locator/event waits rather than a fixed delay after each tool.
+  timeouts: { settle: 0 },
 }, null, 2) + '\n', { mode: 0o600 });
 
 if (process.argv.includes('--token-stdin')) {

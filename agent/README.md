@@ -53,25 +53,37 @@ to discover newly installed skills.
 
 ```sh
 helium-playwright connect
-helium-playwright tab-new https://example.com
+helium-playwright tab-new-background https://example.com
 helium-playwright snapshot
 helium-playwright click e6
 helium-playwright run-code 'async page => await page.title()'
 helium-playwright detach
 ```
 
-Apart from `connect`, arguments are passed straight to the official CLI. `connect`
+Apart from `connect` and `tab-new-background`, arguments are passed straight to the official CLI command client. `connect`
 reuses the named session or calls `playwright-cli -s=helium attach --extension=chrome`
 with `PLAYWRIGHT_MCP_EXECUTABLE_PATH` pointing to Helium. `chrome` is the protocol
 channel label, not the browser executable. Set `HELIUM_PLAYWRIGHT_SESSION` to use
 another session name. Commands run from a stable local workspace, so they work
 across terminal projects; use absolute file paths for exports.
 
+`tab-new-background <http(s)-url>` creates a blank inactive tab in the helper's window,
+attaches it to the official extension group, then navigates with native
+`Page.goto`. This ordering avoids a navigation/attachment race observed in the
+benchmarks. It returns the tab index, ID, URL, title and whether selection stayed
+unchanged. Target that page through `page.context().pages()` in `run-code` for
+background work. The helper tab must remain available. This command is a small
+adapter using the official extension and Playwright APIs. It rejects non-HTTP(S)
+targets before creating a tab: a final `about:blank` navigation check coincided
+with a Helium browser crash. This guard avoids that tested path; it is not a
+fix to the browser binary.
+
 Output defaults to the CLI's `--raw` mode to keep agent token use low. Use
 `--verbose` to restore the upstream code blocks and page summaries, or `--json`
 for machine parsing. Authentication tokens are redacted from terminal output.
-The Codex skill prefers a reused connection, batched `run-code` operations, small
-return values, targeted snapshots, and locator waits instead of sleeps.
+For any browser task, reuse the connection, batch related operations with
+`run-code`, return only needed fields, and use targeted snapshots. These are
+ordinary CLI operations and do not require a skill.
 
 The integration pins `@playwright/cli` in `package-lock.json` (the official CLI
 currently depends on a Playwright alpha). Keep the lockfile when installing.
@@ -83,9 +95,44 @@ and [extension documentation](https://github.com/microsoft/playwright/tree/main/
 
 This uses the extension's CDP bridge, so it does not expose every browser-level
 Playwright operation. For example, `context.newCDPSession(page)` currently fails
-in the upstream bridge. Ordinary page navigation, locators, fill/click, snapshots,
+in the upstream bridge. In the download benchmark, files reached Downloads but
+Playwright's `download` event timed out. Use explicit filesystem completion and
+content checks when relying on native browser downloads through this connection;
+`download.saveAs()` is not verified here. Ordinary page navigation, locators, fill/click, snapshots,
 and `run-code` were exercised successfully. Initial connection and creating tabs
 can select a tab; ongoing background actions do not need to select it.
+
+## Fast execution
+
+The launcher runs the pinned official modular command client in one Node process.
+It skips the outer executable's large bundle import, update notifier, and skill
+lookup. Browser commands, argument validation, daemon transport, locators, and
+errors remain upstream implementations. `playwright-cli` itself is still the
+unchanged upstream executable. Reused `connect` checks the actual daemon with
+`tab-list`; an unresponsive check fails after 10 seconds without reconnecting over
+an active task. Output is bounded to 32 MiB and redacted, including split writes.
+
+Setup sets the native `timeouts.settle` option to `0` (upstream defaults to
+500 ms). This removes the blanket post-action delay, while keeping locator
+actionability and navigation timeouts. A click may return before a delayed fetch
+or UI update, so wait for the expected result explicitly before reading it. To
+restore the upstream delay, set `timeouts.settle` to `500` in
+`agent/.local/cli.config.json`, then detach and reconnect. A reconnect can briefly
+select the extension tab; it is not required for ordinary commands.
+
+General workflow rules:
+
+- Keep related navigation, input, waits, and extraction in one `run-code` call.
+- Use `Promise.all` only for independent pages or reads. Keep dependent actions ordered.
+- When a request is known, arm `waitForResponse` before its triggering action,
+  then check the expected UI. This avoided extra locator polling in the benchmark.
+- Await a meaningful result with a locator or response event before returning.
+  For background `waitForFunction`, use explicit numeric polling when animation
+  frames may be paused; state-based locator waits are preferable.
+- Reuse a saved script via `run-code --filename=/absolute/path/task.js` for repeatable workflows.
+- Return small structured results. Take a screenshot or full snapshot when needed.
+- Preserve normal Playwright actionability; do not use forced clicks to save time.
+- Work in agent tabs and avoid `bringToFront`. Active-tab protection is still deferred.
 
 ## Setup verification (2026-09-28)
 
@@ -96,7 +143,7 @@ locator click while a different tab remained visibly selected. The background
 test used real browser input with Playwright's normal actionability checks.
 The Codex skill passed its validator; a fresh Codex task has not been benchmarked.
 
-See [the deferred benchmark plan](BENCHMARKS.md) for later real-world tasks.
+See [repeatable benchmarks and results](BENCHMARKS.md).
 
 ## Remove
 
