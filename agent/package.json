@@ -12,7 +12,9 @@
     "benchmark:workflows": "node benchmarks/workflows.mjs",
     "benchmark:output": "node benchmarks/output-modes.mjs",
     "benchmark:startup": "node scripts/benchmark-startup.mjs",
-    "benchmark:baseline": "node scripts/freeze-baseline.mjs"
+    "benchmark:baseline": "node scripts/freeze-baseline.mjs",
+    "test:browser": "node tests/browser-live.mjs",
+    "test:windows": "node tests/window-live.mjs"
   },
   "dependencies": {
     "@playwright/cli": "0.1.21"

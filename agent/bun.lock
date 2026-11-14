@@ -1,0 +1,19 @@
+{
+  "lockfileVersion": 2,
+  "configVersion": 0,
+  "workspaces": {
+    "": {
+      "name": "helium-playwright-integration",
+      "dependencies": {
+        "@playwright/cli": "0.1.21",
+      },
+    },
+  },
+  "packages": {
+    "@playwright/cli": ["@playwright/cli@0.1.21", "", { "dependencies": { "playwright": "1.64.0-alpha-1789764292000", "playwright-core": "1.64.0-alpha-1789764292000" }, "bin": { "playwright-cli": "playwright-cli.js" } }, "sha512-FfxmVJj2wJlsxPksUO+4N7gqimPEQPajpocl2Mk97ENIGfAVZ4aElzPb5sDdGXHI9J/3Y8EtUiUTas0VsTm/sg=="],
+
+    "playwright": ["playwright@1.64.0-alpha-1789764292000", "", { "dependencies": { "playwright-core": "1.64.0-alpha-1789764292000" }, "bin": "cli.js" }, "sha512-3Ngs4ERGdC912uW3srEDtNVey4u1wSaQ/EFcKhxMpz0by0K6nidaJgM087pLpJc1osytiVnL7ack5gvgPArPNw=="],
+
+    "playwright-core": ["playwright-core@1.64.0-alpha-1789764292000", "", { "bin": "cli.js" }, "sha512-ZgRaybFv4rRy7QMGnYprEGFdNJnvapNqcaER2w96bDQA+40BWIle1el1Yh9KHD3E6XYmieMB+r+UxFTCauTGGQ=="],
+  }
+}

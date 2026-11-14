@@ -25,8 +25,9 @@ export function protectOutput(token, maxBytes = 32 * 1024 * 1024) {
   process.once('exit', () => {
     for (const { chunks, fd } of streams) {
       let text = Buffer.concat(chunks).toString('utf8');
-      if (token) {
-        for (const secret of new Set([token, encodeURIComponent(token)]))
+      const secretToken = typeof token === 'function' ? token() : token;
+      if (secretToken) {
+        for (const secret of new Set([secretToken, encodeURIComponent(secretToken)]))
           text = text.replaceAll(secret, '[redacted]');
       }
       if (text) {

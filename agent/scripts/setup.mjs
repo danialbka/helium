@@ -55,4 +55,4 @@ await link(skill, path.join(os.homedir(), '.agents/skills/helium-playwright'));
 console.log(`Installed official playwright-cli and helium-playwright in ${bin}`);
 console.log('Installed the helium-playwright skill for terminal Codex. Start a new Codex session to discover it.');
 console.log('Run helium-playwright connect. The official extension must be installed in Helium.');
-console.log('Active-tab protection is not implemented.');
+console.log('Agents work in unselected tabs by default; HELIUM_PLAYWRIGHT_FOREGROUND=1 turns that off.');
